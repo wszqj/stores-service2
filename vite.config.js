@@ -12,11 +12,11 @@ export default defineConfig({
   server: {
     proxy: {
       '/api': {
-        target: 'http://efibj9.natappfree.cc',
+        target: 'http://txdfsz.natappfree.cc',
         changeOrigin: true,
         rewrite: (path) => path.replace(/^\/api/, ''),
       },
     },
   },
-  base: '/wszqj.stores/'  // 设置为你的仓库名
+  base: '/stores-service1/'  // 设置为你的仓库名
 });

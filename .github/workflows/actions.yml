@@ -1,26 +1,52 @@
-name: 服务地址的修改
+name: 后端服务地址修改
 
-on: push
-
-permissions:
-  contents: write
+on:
+  push:
+    branches:
+      - main  # 触发部署的分支
 
 jobs:
-  npm-build:
-    name: npm-build工作
+  deploy:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 读取仓库内容
-        uses: actions/checkout@v4
+      - name: Checkout 代码
+        uses: actions/checkout@v2
 
-      - name: 安装依赖和项目打包
+      - name: 设置 NGINX
+        uses: jakejarvis/nginx-builder@v1
+        with:
+          path: ./nginx
+          # 配置 NGINX，将 API 请求代理到你的后端服务地址
+          config: |
+            server {
+              listen 80;
+              server_name wszqj.github.io; # 这里填写你的域名或 GitHub Pages 地址
+
+              location /api {
+                rewrite /api/(.*)  /$1 break;
+                proxy_pass  http://txdfsz.natappfree.cc;
+              }
+
+              # 配置静态文件路径
+              location / {
+                root html/dist;
+                index index.html index.htm;
+              }
+              error_page   500 502 503 504  /50x.html;
+              location = /50x.html {
+              root   html;
+              }
+            }
+
+      - name: 构建 Vue 应用
         run: |
           npm install
           npm run build
 
-      - name: 部署
-        uses: JamesIves/github-pages-deploy-action@v4
+      - name: 部署到 GitHub Pages
+        uses: peaceiris/actions-gh-pages@v4
         with:
-          branch: gh-pages
-          folder: dist
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+
